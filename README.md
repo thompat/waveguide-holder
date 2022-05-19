@@ -1,7 +1,7 @@
 # Generating parameterized waveguide holder designs in OpenSCAD
 This repository contains the code used to generate parameterized waveguide holders with [OpenSCAD](https://github.com/openscad/openscad). The waveguide holders were then exported as a .stl file-extension and sliced using [Cura](https://github.com/Ultimaker/Cura) for 3D printing.
 
-#### To-do: Reposition and scale images, label parameters on images, complete example. 
+#### To-do: Reposition and scale images, label parameters on images, include example images. 
 
 ## Purpose
 
@@ -32,19 +32,43 @@ For full details, see the comments included in the waveguide-holder-generator fi
 
 The `waveguide_holder` module uses two helpers, `hex_generator` and `screw_generator` which can be found at the start of the code. These helper modules create a rough approximation for a nut and screw with parameterized diameters and lengths. Both solids are unthreaded but useful for creating the counterbores used in the waveguide holder. There is an unused `nut_generator` which compliments the screw generator. This module simply generators the `hex_generator` solid with a hole in it. 
 
-Useful parameters corresponding to the 8-32 screws and nuts are as follows: `screw_generator(h_diameter = 7.25, t_diameter = 4.5,x-3,x)` for creating counterbores with 3 mm thick material left for the head to rest on, as well as `nut_generator(10,5,4,4.5) and `hex_generator(10,5,4)`. 
+Useful parameters corresponding to the 8-32 screws and nuts are as follows: `screw_generator(h_diameter = 7.25, t_diameter = 4.5,x-3,x);` for creating counterbores with 3 mm thick material left for the head to rest on, as well as `nut_generator(10,5,4,4.5);` and `hex_generator(10,5,4);`. 
 
 ## Example
 
 Below is a sample of the reasoning one may use when using this code to achieve certain goals.
 
-Objective: Create a holder that can house a waveguide that is 30 mm wide and 15 mm high, measured facing the waveguide's cross-section. 
+**Objectives:**
+1. Create a holder that can house a waveguide that is 30 mm wide and 15 mm high, measured facing the waveguide's cross-section. 
+2. Make the center of the waveguide rest at 5.5'' when sitting on a fixed height of 2.625''. 
+3. Make the separation parameter larger, perhaps 60 mm instead of 30 mm. 
 
-Secondary Objective: Make the center of the waveguide rest at 5.5'' when sitting on a fixed height of 2.625''. 
+The `wg_width` and `wg_height` are specified by `waveguide_holder(30, 15, height);`. To determine the height of the holder, the following calculation is used: 
 
-Tertiary Objective: Make the separation parameter larger, perhaps 60 mm instead of 30 mm. 
+> 5.5 inches \* 25.4 mm/inch = 139.7 mm
+> 
+> 2.625 inches \* 25.4 mm/inch = 66.675 mm
+> 
+> Half of the waveguide's height is 15 mm / 2 = 7.5 mm
+> 
+> height = 139.7 - 66.675 - 7.5 = 65.525 mm
+
+So the desired waveguide parameters are given by  `waveguide_holder(30, 15, 65.525);`. This is the solid that the module currently generates:
+
+**IMAGE PRIOR TO SEPARATION CHANGE GOES HERE**
+
+To change the separation parameter, go to the let statement defined directly under the purpose comment of the `waveguide_holder` module. It should look like `let(radius = 1, depth = 15, thickness = 5, separation = 30, number_of_posts = 1)`
+
+Change the desired parameters so it reads `let(radius = 1, depth = 15, thickness = 5, separation = 60, number_of_posts = 1)`. 
+
+Now `waveguide_holder(30, 15, 65.525);` module generates the desired solid:
+
+**FINAL EXAMPLE IMAGE GOES HERE** 
 
 ## Future Implementations
 
+Thorlabs optical post assemblies can be configured to use 1/4-20 threads. It would be useful to include a `thread` predicate that takes a string `(any of "1/4-20" "8-32")` and automatically changes the size of the counterbores. 
 
+It would be useful to include a parameter specifying the height of the object the waveguide holder will rest on, to facilitate calculating the `height` parameter. Moreover, it would be useful if the `height` parameter was measured from the center of the waveguide's cross-section.
 
+Working with mm can be frustrating when most measurements are standardized to inches. While a significant overhaul, it might be beneficial to write this code using inches or - even more interesting, include a `units` predicate to readily swap between mm and inches. 
