@@ -36,7 +36,7 @@ module nut_generator(o_diameter, i_diameter, depth){
     // "o_diameter" is outer diameter of nut, measured point-to-point,
     // "i_diameter" is inner diameter of hole, and "depth" is 
     // length of extrusion. 
-    // Useful parameters are nut_generator(10,4,3.3) for an 8-32 nut 
+    // Useful parameters are nut_generator(10,5,4) for an 8-32 nut 
     //
     difference(){
         hex_generator(o_diameter, depth, o_diameter/20);
@@ -97,5 +97,4 @@ module waveguide_holder(wg_height, wg_width, height)
                     rotate([90,0,0])
                         screw_generator(7.25,4.5,height-2,height);}}}
 
-waveguide_holder(20,39,101-9-38-20/2); //47.625    44 
-
+waveguide_holder(20,39,101-9-38-20/2);
