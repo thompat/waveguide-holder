@@ -39,7 +39,9 @@ Useful parameters corresponding to the 8-32 screws and nuts are as follows: `scr
 Below is a sample of the reasoning one may use when using this code to achieve certain goals.
 
 Objective: Create a holder that can house a waveguide that is 30 mm wide and 15 mm high, measured facing the waveguide's cross-section. 
+
 Secondary Objective: Make the center of the waveguide rest at 5.5'' when sitting on a fixed height of 2.625''. 
+
 Tertiary Objective: Make the separation parameter larger, perhaps 60 mm instead of 30 mm. 
 
 ## Future Implementations
