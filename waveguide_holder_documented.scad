@@ -1,0 +1,101 @@
+//
+// ***********************************************************************
+// Waveguide-holder parameterized design
+// Patrick Thomas
+// Spring 2022 Work-term
+// ***********************************************************************
+//
+
+// Set number of fragments to higher values for smoother curved edges
+$fn = 25;
+
+// Helper functions 
+module hex_generator(diameter, depth){
+    //
+    // Returns a hexagonal extrusion oriented normal to z=0 plane.
+    // "diameter" is point-to-point, "depth" is length of extrusion,
+    // and "tolerance" is an increased size due to cylinder radius.
+    // A tolerance of diameter/5 is recommended for rounded corners. DO I NEED THIS?
+    //
+    let(number_of_cylinders = 6, radius = 0.1){
+                    hull(){
+                        // Encloses the below objects in mesh
+                        for(i = [1:number_of_cylinders]){
+                            rotate(i*360/number_of_cylinders)
+                            translate([diameter/2,0,0])
+                            cylinder(r=radius,h=depth);
+                            }}}}
+                            // Generates 6 cylinders of height = depth
+                            // rotating each cylinder by 60 degrees ad
+                            // translating each cylinder by diameter/2
+
+module nut_generator(o_diameter, i_diameter, depth){
+    //
+    // Returns a hexagonal extrusion produced by hex_generator but
+    // with a hole, made by a cylinder, so it resembles a hex nut.  
+    // "o_diameter" is outer diameter of nut, measured point-to-point,
+    // "i_diameter" is inner diameter of hole, and "depth" is 
+    // length of extrusion. 
+    // Useful parameters are nut_generator(10,4,3.3) for an 8-32 nut 
+    //
+    difference(){
+        hex_generator(o_diameter, depth, o_diameter/20);
+        cylinder(depth, i_diameter/2, i_diameter/2);}}
+
+module screw_generator(h_diameter, t_diameter, h_depth, length){
+    //
+    // Returns union of two cylinders oriented normal to the z=0 plane.
+    // Cylinders form a screw-like solid with head resting on z=0 plane.
+    // "h_diameter" is diameter of head, t_diameter is diameter of thread,
+    // "h_depth" is depth of the head, and "length" is total length of
+    // screw (from the top of its head to bottom of its thread). 
+    //
+    union(){
+        cylinder(length, t_diameter/2, t_diameter/2);
+        cylinder(h_depth, h_diameter/2, h_diameter/2);}}
+
+//         
+module waveguide_holder(wg_height, wg_width, height)
+    // 
+    // Returns an object capable of supporting the waveguide of specified
+    // height, "wg_height" and width, "wg_width" that supports mounting to
+    // optical rod support via 8-32 screws. The waveguide is kept in place
+    // using four concavities, each housing a hex nut which acts as the
+    // complimentary thread for a nylon-tipped set screw. 
+    //
+    let(radius = 1, depth = 15, thickness = 5, separation = 30, number_of_posts = 1)
+        // radius of cylinder used in minkowski sums to round corners, 
+        // depth of part surrounding the waveguide,
+        // thickess of part surrounding the waveguide, 
+        // separation hole-to-hole of the supports holding waveguide + separation of adjacent posts,
+        // number_of_posts informs how many iterations to do, recommended 1 or 2.
+        {
+            for(i = [0:number_of_posts]){
+                translate([0,0,i*separation]) // Places multiple holders on either side of post
+                    difference(){  
+                        minkowski(){ // Build exterior cube with rounded corners
+                            cube([wg_width+thickness*2-1.5, wg_height+thickness*2-1.5, depth/2], center = true);
+                            cylinder(depth/2, radius, radius, center = true);}
+                        minkowski(){ // Build interior cube with rounded corners, fitted to waveguide
+                            cube([wg_width-2, wg_height-2, depth/2], center = true);
+                            cylinder(depth/2, radius, radius, center = true);}
+                        rotate([270,0,0]) // Creates set screw hole on top of waveguide holder
+                            cylinder(wg_height/2+thickness+1,2.25,2.25, center = false);
+                        rotate([0,90,0])  // Creates set screw hole on side of waveguide holder
+                            cylinder(wg_width/2+thickness+1,2.25,2.25, center = false);
+                        translate([0,wg_height/2-0.1,0])
+                        rotate([270,0,0]) // Creates nut housing on upper-interior of waveguide holder   
+                            hex_generator(10.5,4);
+                        translate([wg_width/2-0.1,0,0])
+                        rotate([0,90,0])  // Creates nut housing on side-interior of waveguide holder
+                            hex_generator(10.5,4);}}
+            for(i = [0:number_of_posts-1]){
+            translate([0,-wg_height/2,separation/2+i*separation]) // Creates posts specified by number_of_posts
+                difference(){
+                    translate([0,-height/2,0])
+                        cube([wg_width/2,height,separation-depth],center = true);
+                    rotate([90,0,0])
+                        screw_generator(7.25,4.5,height-2,height);}}}
+
+waveguide_holder(20,39,101-9-38-20/2); //47.625    44 
+
